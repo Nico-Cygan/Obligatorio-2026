@@ -1,8 +1,23 @@
 package uy.edu.um.doors;
 
-public class ProcessManagerImpl implements ProcessManager{
+import uy.edu.um.doors.model.Process;
+import uy.edu.um.doors.model.User;
+import uy.edu.um.tad.hash.MyHash;
+import uy.edu.um.tad.hash.MyHashImpl;
+import uy.edu.um.tad.queue.MyQueue;
+import uy.edu.um.tad.queue.MyQueueImpl;
 
-    //EL DISEÑO DE LA ESTRUCTURA DE ALMACENAMIENTO DEBE IMPLEMENTARSE EN ESTA CLASE EN RELACIÓN CON LAS ENTIDADES QUE DEFINA
+public class ProcessManagerImpl implements ProcessManager {
+
+    private MyHash<Integer, User> usersByUid;
+    private MyHash<Integer, Process> processesByPid;
+    private MyQueue<Process> newProcesses;
+
+    public ProcessManagerImpl() {
+        this.usersByUid = new MyHashImpl<>();
+        this.processesByPid = new MyHashImpl<>();
+        this.newProcesses = new MyQueueImpl<>();
+    }
 
     @Override
     public void loadProcessAndUserData(String processCsvPath, String usersCsvPath) {
