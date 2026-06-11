@@ -1,5 +1,6 @@
 package uy.edu.um.doors;
 
+import uy.edu.um.doors.model.Event;
 import uy.edu.um.doors.model.Process;
 import uy.edu.um.doors.model.User;
 import uy.edu.um.tad.hash.MyHash;
@@ -71,37 +72,37 @@ public class ProcessManagerImpl implements ProcessManager {
         }
         System.out.println("PENDING");
         MyList<Process> aux = new MyLinkedListImpl<>();
-        while(!pendingProcesses.isEmpty()){
-            try{
+        while(!pendingProcesses.isEmpty()) {
+            try {
                 Process p = pendingProcesses.remove();
                 aux.add(p);
                 System.out.println("\t" + printOneProcess(p));
-            } catch (EmptyHeapException exc){
+            } catch (EmptyHeapException exc) {
                 break;
-            }
-            Node<Process> actual = aux.getFirst();
-            while (actual != null){
-                pendingProcesses.insert(actual.getValue());
-                actual = actual.getNext();
-            }
-            System.out.println("FINISHED:");
-            MyList<Process> auxTerminados = new MyLinkedListImpl<>();
-            while (!finishedProcesses.isEmpty()){
-                try{
-                    Process p = finishedProcesses.pop();
-                    auxTerminados.add(p);
-                    System.out.println("\t" + printOneFinishedProcess(p));
-                } catch (EmptyStackException exc2){
-                    break;
-                }
             }
         }
 
+        Node<Process> actual = aux.getFirst();
+        while (actual != null){
+            pendingProcesses.insert(actual.getValue());
+            actual = actual.getNext();
+        }
 
 
-
-
-        System.out.println("IMPLEMENTAR");
+        System.out.println("FINISHED:");
+        MyList<Process> auxTerminados = new MyLinkedListImpl<>();
+        while (!finishedProcesses.isEmpty()){
+            try{
+                    Process p = finishedProcesses.pop();
+                    auxTerminados.add(p);
+                    System.out.println("\t" + printOneFinishedProcess(p));
+            } catch (EmptyStackException exc2){
+                    break;
+            }
+        }
+        for (int i = auxTerminados.size() - 1; i>=0; i--){
+            finishedProcesses.push(auxTerminados.get(i));
+        }
     }
     public String printOneProcess(Process p){
         return "PID=" + p.getPid() + " | " + p.getName() + " | USER:"
@@ -116,7 +117,62 @@ public class ProcessManagerImpl implements ProcessManager {
 
     @Override
     public void printStatusVerbose() {
-        System.out.println("IMPLEMENTAR");
+        System.out.println("PROCESS STATUS");
+        System.out.printf("EXECUTING:");
+        if (currentProcess != null){
+            System.out.println("\t" + printOneProcess(currentProcess));
+            printEvents(currentProcess);
+        }
+        System.out.println("PENDING");
+        MyList<Process> aux = new MyLinkedListImpl<>();
+        while(!pendingProcesses.isEmpty()) {
+            try {
+                Process p = pendingProcesses.remove();
+                aux.add(p);
+                System.out.println("\t" + printOneProcess(p));
+                printEvents(p);
+            } catch (EmptyHeapException exc) {
+                break;
+            }
+        }
+        Node<Process> actual = aux.getFirst();
+        while (actual != null){
+            pendingProcesses.insert(actual.getValue());
+            actual = actual.getNext();
+        }
+        System.out.println("FINISHED:");
+        MyList<Process> auxTerminados = new MyLinkedListImpl<>();
+        while (!finishedProcesses.isEmpty()){
+            try{
+                Process p = finishedProcesses.pop();
+                auxTerminados.add(p);
+                System.out.println("\t" + printOneFinishedProcess(p));
+                printEvents(p);
+            } catch (EmptyStackException exc2){
+                break;
+            }
+        }
+        for (int i = auxTerminados.size() - 1; i>=0; i--){
+            finishedProcesses.push(auxTerminados.get(i));
+        }
+    }
+    public void printEvents(Process p) {
+        Node<Event> actual = p.getEvents().getFirst();
+        while (actual != null){
+            Event evento = actual.getValue();
+            String instrucciones = "";
+            Node<String> instrNodo = evento.getInstructions().getFirst();
+            while (instrNodo !=null){
+                instrucciones += instrNodo.getValue();
+                if(instrNodo.getNext() != null){
+                    instrucciones += ", ";
+                }
+                instrNodo = instrNodo.getNext();
+            }
+            System.out.println("\t EVENT:" + evento.getType() + " | Instructions [" + instrucciones + "]");
+            actual = actual.getNext();
+        }
+
     }
 
     @Override
