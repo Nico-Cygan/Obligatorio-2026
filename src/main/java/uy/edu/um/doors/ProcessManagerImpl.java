@@ -1,11 +1,13 @@
 package uy.edu.um.doors;
 
 import uy.edu.um.doors.model.Process;
+import uy.edu.um.doors.model.ProcessState;
 import uy.edu.um.doors.model.User;
 import uy.edu.um.tad.hash.MyHash;
 import uy.edu.um.tad.hash.MyHashImpl;
 import uy.edu.um.tad.heap.EmptyHeapException;
 import uy.edu.um.tad.heap.MyHeap;
+import uy.edu.um.tad.heap.MyHeapImpl;
 import uy.edu.um.tad.list.MyLinkedListImpl;
 import uy.edu.um.tad.list.MyList;
 import uy.edu.um.tad.list.Node;
@@ -39,7 +41,30 @@ public class ProcessManagerImpl implements ProcessManager {
 
     @Override
     public void prepareProcesses() {
-        System.out.println("IMPLEMENTAR");
+        if (newProcesses == null || newProcesses.isEmpty()) {
+            System.out.println("No hay proceso nuevos para prepar.");
+            return;
+        }
+
+        this.pendingProcesses = new MyHeapImpl<>(false);
+
+        while (!newProcesses.isEmpty()) {
+            try {
+                Process p = newProcesses.dequeue();
+                p.calculatePriority();
+                p.setState(ProcessState.PENDING);
+                pendingProcesses.insert(p);
+                System.out.println("New Pending Proces: PID=" + p.getPid()
+                        + " | " + p.getName()
+                        + " | User: " + p.getUser().getAlias()
+                        + " Uid: " + p.getUser().getUid()
+                        + " | p= " + p.getPriority());
+
+            } catch (Exception e){
+                System.out.println("Error al procesar el proceso: " + e.getMessage());
+            }
+        }
+
     }
 
     @Override
