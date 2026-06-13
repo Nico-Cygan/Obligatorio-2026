@@ -37,7 +37,40 @@ public class ProcessManagerImpl implements ProcessManager {
 
     @Override
     public void loadProcessAndUserData(String processCsvPath, String usersCsvPath) {
-        System.out.println("IMPLEMENTAR");
+        CsvLoader loader = new CsvLoader();
+
+        this.usersByUid = new MyHashImpl<>();
+        this.processesByPid = new MyHashImpl<>();
+        this.newProcesses = new MyQueueImpl<>();
+
+        MyList<User> users = loader.loadUsers(usersCsvPath);
+        Node<User> currentUser = users.getFirst();
+        while (currentUser != null) {
+            User user = currentUser.getValue();
+            if (user != null) {
+                if (usersByUid.contains(user.getUid())) {
+                    throw new IllegalArgumentException("Usuario duplicado con UID " + user.getUid());
+                }
+                usersByUid.put(user.getUid(), user);
+            }
+            currentUser = currentUser.getNext();
+        }
+
+        MyList<Process> processes = loader.loadProcesses(processCsvPath, usersByUid);
+        Node<Process> currentProcess = processes.getFirst();
+        while (currentProcess != null) {
+            Process process = currentProcess.getValue();
+            if (process != null) {
+                if (processesByPid.contains(process.getPid())) {
+                    throw new IllegalArgumentException("Proceso duplicado con PID " + process.getPid());
+                }
+                processesByPid.put(process.getPid(), process);
+                newProcesses.enqueue(process);
+            }
+            currentProcess = currentProcess.getNext();
+        }
+
+        System.out.println("Datos de usuarios y procesos cargados correctamente.");
     }
 
     @Override
