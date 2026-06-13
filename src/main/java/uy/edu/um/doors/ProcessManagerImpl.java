@@ -227,6 +227,11 @@ public class ProcessManagerImpl implements ProcessManager {
 
     @Override
     public void printStatusByProcess(int pid) {
-        System.out.println("IMPLEMENTAR");
+        Process p = processesByPid.get(pid);
+        if (p== null){
+            System.out.println("No existe el proceso con PID: " + pid);
+        }
+        System.out.println(printOneProcess(p));
+        printEvents(p);
     }
 }
