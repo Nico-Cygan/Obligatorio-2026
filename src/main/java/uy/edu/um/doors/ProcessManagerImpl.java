@@ -104,12 +104,12 @@ public class ProcessManagerImpl implements ProcessManager {
             finishedProcesses.push(auxTerminados.get(i));
         }
     }
-    public String printOneProcess(Process p){
+    private String printOneProcess(Process p){
         return "PID=" + p.getPid() + " | " + p.getName() + " | USER:"
                 + p.getUser().getAlias() + " UID:" + p.getUser().getUid() + " | P=" + p.getPriority();
 
     }
-    public String printOneFinishedProcess(Process p){
+    private String printOneFinishedProcess(Process p){
         return "PID=" + p.getPid() + " | " + p.getName() + " | STATE: " + p.getState() +
                 " | USER:" + p.getUser().getAlias() + " UID:" + p.getUser().getUid();
 
@@ -156,7 +156,7 @@ public class ProcessManagerImpl implements ProcessManager {
             finishedProcesses.push(auxTerminados.get(i));
         }
     }
-    public void printEvents(Process p) {
+    private void printEvents(Process p) {
         Node<Event> actual = p.getEvents().getFirst();
         while (actual != null){
             Event evento = actual.getValue();
@@ -177,7 +177,52 @@ public class ProcessManagerImpl implements ProcessManager {
 
     @Override
     public void printStatusByUser(int uid) {
-        System.out.println("IMPLEMENTAR");
+        User u = usersByUid.get(uid);
+        if (u == null){
+            System.out.println("No existe usuario con UID: " + uid);
+            return;
+        }
+        System.out.println("PROCESS STATUS - USER: " + u.getAlias() + " UID:" + uid);
+        System.out.println("EXECUTING:");
+        if (currentProcess != null && currentProcess.getUser().getUid() == uid){
+            System.out.println("\t" + printOneProcess(currentProcess));
+        }
+        System.out.println("PENDING:");
+        MyList<Process> aux = new MyLinkedListImpl<>();
+        while (!pendingProcesses.isEmpty()){
+            try{
+                Process p = pendingProcesses.remove();
+                aux.add(p);
+                if (p.getUser().getUid() == uid){
+                    System.out.println("\t" + printOneProcess(p));
+                }
+            } catch (EmptyHeapException exc1){
+                break;
+            }
+        }
+
+        Node<Process> actual = aux.getFirst();
+        while(actual != null){
+            pendingProcesses.insert(actual.getValue());
+            actual = actual.getNext();
+        }
+
+        System.out.println("FINISHED");
+        MyList<Process> auxTerminados = new MyLinkedListImpl<>();
+        while(!finishedProcesses.isEmpty()){
+            try{
+                Process p = finishedProcesses.pop();
+                auxTerminados.add(p);
+                if(p.getUser().getUid() == uid){
+                    System.out.println("\t" + printOneFinishedProcess(p));
+                }
+            }catch (EmptyStackException exc2){
+                break;
+            }
+        }
+        for (int i =auxTerminados.size() - 1; i >= 0; i--){
+            finishedProcesses.push(auxTerminados.get(i));
+        }
     }
 
     @Override
