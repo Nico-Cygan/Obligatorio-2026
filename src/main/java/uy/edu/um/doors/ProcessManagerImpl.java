@@ -103,22 +103,98 @@ public class ProcessManagerImpl implements ProcessManager {
 
     @Override
     public void executeNextProcess() {
-        System.out.println("IMPLEMENTAR");
+        if (currentProcess != null){
+            System.out.println("Erroe: Ya se encuentra un proceso en ejecuccion. PID= " + currentProcess.getPid());
+            return;
+        }
+
+        if (pendingProcesses == null || pendingProcesses.isEmpty()) {
+            System.out.println("Error: No hay procesos pendientes para ejecutar.");
+            return;
+        }
+
+        try {
+            currentProcess = pendingProcesses.remove();
+            currentProcess.setState(ProcessState.RUNNING);
+            System.out.println("Ejecutando proceso: PID=" + currentProcess.getPid()
+                    + " | " + currentProcess.getName()
+                    + " | USER:" + currentProcess.getUser().getAlias()
+                    + " UID:" + currentProcess.getUser().getUid()
+                    + " | P=" + currentProcess.getPriority());
+        } catch (EmptyHeapException e) {
+            System.out.println("Error: No se pudo obtner el siguiente proceso.");
+        }
     }
 
     @Override
     public void finishProcessOk() {
-        System.out.println("IMPLEMENTAR");
-    }
+        if (currentProcess == null){
+            System.out.println("Error: no hay proceso en ejecuccion.");
+            return;
+        }
 
+        currentProcess.setState(ProcessState.FINISHED);
+        System.out.println("Proceso finalizado correctamente PID = " + currentProcess.getPid()
+                + " | " + currentProcess.getName());
+
+        pushToFinished(currentProcess);
+        currentProcess = null;
+    }
     @Override
     public void finishProcessError() {
-        System.out.println("IMPLEMENTAR");
+        if (currentProcess == null){
+            System.out.println("Error: no hay proceso en ejecuccion.");
+            return;
+        }
+
+        currentProcess.setState(ProcessState.FINISHED);
+        System.out.println("Proceso finalizado Correctamente PID = " + currentProcess.getPid()
+                + " | " + currentProcess.getName());
+
+        pushToFinished(currentProcess);
+        currentProcess = null;
     }
 
     @Override
     public void terminateProcess(int uid) {
-        System.out.println("IMPLEMENTAR");
+        if (currentProcess == null){
+            System.out.println("Error: no hay proceso en ejecuccion.");
+            return;
+        }
+
+        if (currentProcess.getUser().getUid() != uid){
+            System.out.println("Error: El proeceso en ejecucion no pertence al usuario UID= " + uid);
+            return;
+        }
+
+        currentProcess.setState(ProcessState.FINISHED);
+        System.out.println("Proceso terminado correctamente PID = " + currentProcess.getPid()
+                + " | " + currentProcess.getName()
+                + " | USER UID=" + uid);
+
+        pushToFinished(currentProcess);
+        currentProcess = null;
+    }
+
+    private void pushToFinished(Process process){
+        if (finishedProcesses == null){
+            finishedProcesses = new MyStackImpl<>();
+        }
+
+        if (finishedProcesses.size() > MAX_FINISHED_PROCESS_ON_RAM){
+            System.out.println("Vaciando la pila de finalizados:");
+            while (!finishedProcesses.isEmpty()){
+                try {
+                    Process finished = finishedProcesses.pop();
+                    System.out.println("PID arhivado=" + finished.getPid()
+                            + " | " + finished.getName()
+                            + " | STATE=" + finished.getState());
+                } catch (EmptyStackException e) {
+                    break;
+                }
+            }
+        }
+        finishedProcesses.push(process);
     }
 
     @Override
