@@ -23,6 +23,8 @@ public class Process implements Comparable<Process> {
     private int priority;
     private ProcessState state;
     private MyList<Event> events;
+    private FinishType finishType;
+    private User terminatedBy;
 
     public int calculatePriority() {
         if (user == null || events == null || events.isEmpty()) {
