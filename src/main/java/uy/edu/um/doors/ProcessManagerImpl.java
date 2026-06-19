@@ -193,6 +193,7 @@ public class ProcessManagerImpl implements ProcessManager {
                 try {
                     Process finished = finishedProcesses.pop();
                     logger.logStackOverflow(finished);
+                    processesByPid.remove(finished.getPid());
                     System.out.println("  PID archivado=" + finished.getPid()
                             + " | " + finished.getName()
                             + " | STATE=" + (finished.getFinishType() != null
