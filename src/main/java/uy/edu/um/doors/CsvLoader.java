@@ -112,7 +112,7 @@ public class CsvLoader {
         }
 
         MyList<Event> events = parseEvents(parts[3], lineNumber);
-        return new Process(pid, name, owner, 0, ProcessState.NEW, events);
+        return new Process(pid, name, owner, 0, ProcessState.NEW, events, null, null);
     }
 
     private MyList<Event> parseEvents(String rawEvents, int lineNumber) {

@@ -33,6 +33,7 @@ public class ProcessManagerImpl implements ProcessManager {
         this.processesByPid = new MyHashImpl<>();
         this.newProcesses = new MyQueueImpl<>();
         this.finishedProcesses = new MyStackImpl<>();
+        this.pendingProcesses = new MyHeapImpl<>(false);
         this.logger = new ProcessLogger();
     }
 
@@ -77,13 +78,10 @@ public class ProcessManagerImpl implements ProcessManager {
     @Override
     public void prepareProcesses() {
         if (newProcesses == null || newProcesses.isEmpty()) {
-            System.out.println("No hay proceso nuevos para prepar.");
+            System.out.println("No hay procesos nuevos para preparar.");
             return;
         }
 
-        if (this.pendingProcesses == null) {
-            this.pendingProcesses = new MyHeapImpl<>(false);
-        }
 
         while (!newProcesses.isEmpty()) {
             try {
@@ -212,8 +210,11 @@ public class ProcessManagerImpl implements ProcessManager {
     public void printStatus() {
         System.out.println("PROCESS STATUS");
         System.out.printf("EXECUTING:");
-        if (pendingProcesses == null || pendingProcesses.isEmpty()) {
+        if (currentProcess != null) {
             System.out.println("\t" + printOneProcess(currentProcess));
+        }else {
+            System.out.println("\t(sin proceso en ejecucion)");
+
         }
         System.out.println("PENDING");
         MyList<Process> aux = new MyLinkedListImpl<>();
@@ -414,6 +415,7 @@ public class ProcessManagerImpl implements ProcessManager {
         Process p = processesByPid.get(pid);
         if (p== null){
             System.out.println("No existe el proceso con PID: " + pid);
+            return;
         }
         System.out.println(printOneProcess(p));
         printEvents(p);
